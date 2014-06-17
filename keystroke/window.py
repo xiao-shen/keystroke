@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 class Windowing:
     """
@@ -22,6 +23,8 @@ class Windowing:
         self.windowFunc =  windowFunc(self.windowSize)
     
     def apply(self,y_in):
+        return self.applybis(y_in)
+        print "begin windowing"
         """
         Apply the windowing function to the array y_in. 
         
@@ -45,5 +48,55 @@ class Windowing:
         for i in xrange(numberOfSteps):
             offset = i * self.stepSize
             out[i] = y_in[offset : offset + self.windowSize] #* self.windowFunc
-         
+        print " end windowing"
         return out
+
+    def applybis(self,y_in):
+        """
+        This windowing function seeks first for the beginning of a keystroke and then returns a list of fixed-sized windows in a matrix
+        """
+        print "begin detection"
+        Fs = float(44100)
+        
+        peakWindowSize = int(0.030 * Fs)
+        peakStepSize = int(0.035 * Fs)
+        pwr_threshold = float(600 ** 2)
+
+        keystrokeWindowSize = int(0.240 * Fs)
+        keystrokeMargin = int(0.035 * Fs)
+
+        maxWindows = int(math.floor((len(y_in) - keystrokeWindowSize)/keystrokeWindowSize))
+        out = np.ndarray((maxWindows,keystrokeWindowSize),dtype = y_in.dtype) # initialize values to zero please
+
+        offset = 0 # initialize the time origin
+        count = 0
+        end_offset = len(y_in) - keystrokeWindowSize
+        while offset < end_offset:
+            peak = y_in[offset : offset + peakWindowSize]
+			# no pre-implemented function to calculate power?
+            peak_sqr = map(int_sqr_float,peak)
+            peak_pwr = np.sum(peak_sqr) / peakWindowSize
+            # print peak_pwr
+            
+            if peak_pwr > pwr_threshold:
+                # we suppose we are on the beginning of a keystroke
+                offset = offset - keystrokeMargin
+                sample_time = float(offset) / Fs
+                sample = y_in[offset : offset + keystrokeWindowSize]
+                #sample_x = xrange(offset, offset + keystrokeWindowSize)
+                #plt.plot(sample_x, sample)
+                out[count] = sample
+                count = count + 1
+                offset = offset + keystrokeWindowSize + keystrokeMargin
+            else:
+                offset = offset + peakStepSize
+
+        print "%d keystrokes detected" % count
+        #plt.show()
+		# delete zero rows
+        np.delete(out, xrange(count, maxWindows))
+        print " end detection"
+        return out
+    
+def int_sqr_float(x):
+    return float(x)*float(x)
