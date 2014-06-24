@@ -14,12 +14,13 @@ class FeatureExtractor:
     supportedFeatures = ["MFCC", "DMFCC", "ZCR", "BE", "PS"]
     
     def __init__(self, feature_type):
-        self.windowSize = 13230   # 1*4096
-        self.stepSize = 6615   # 1*2048
+        self.windowSize = 13230   # originally, 1*4096
+        self.stepSize = 6615   # originally, 1*2048
         self.windowFunc =  np.hamming(self.windowSize)
         self.threshold = ThresholdFilter()
         self.windowing = Windowing(self.windowSize,self.stepSize)
-        self.melfilterbank = melFilter(self.windowSize)
+        self.melfiltercoeffs = 25
+        self.melfilterbank = melFilter(self.windowSize, self.melfiltercoeffs)
         self.feature_type = feature_type
         
         if not self.feature_type in self.supportedFeatures:
@@ -43,9 +44,8 @@ class FeatureExtractor:
         x_len,y_len = windowedData.shape
         
         # MFCCs
-        num_coefficients = 13
         if self.feature_type == "MFCC":
-            return self.calcMFCCs(windowedData,num_coefficients)
+            return self.calcMFCCs(windowedData, self.melfiltercoeffs)
         
         # Delta MFCCs
         if self.feature_type == "DMFCC":
@@ -141,7 +141,7 @@ class FeatureExtractor:
         
         return out
 
-def melFilter(blockSize, numcoeff=13, minHz = 0, maxHz = 22050):
+def melFilter(blockSize, numcoeff, minHz = 0, maxHz = 22050):
     
     numBands = int(numcoeff)
     

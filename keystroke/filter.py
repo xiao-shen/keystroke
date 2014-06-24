@@ -18,7 +18,11 @@ class ThresholdFilter:
             - In the y direction are the windows of the audio to analyze
         @returns: the Matrix without silent windows
         """
-    
+
+        # with the new windowing algorith, filtering is already performed
+
+        return y_in
+        
         x_len, y_len = y_in.shape
         
         linesToRemove = []

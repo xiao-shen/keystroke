@@ -55,7 +55,7 @@ def fixPathOnWindowsAndMacOs():
 if __name__=="__main__":
     fixPathOnWindowsAndMacOs()
     parser = argparse.ArgumentParser(description="Keystroke-Detctor script to predict the key press event which caused a certain sound")
-    parser.add_argument("-c", "--classifier", default="KNN", choices=["GNB", "DT", "KNN", "RF", "SVC", "DC"], help="The Classification Algorithm to use")
+    parser.add_argument("-c", "--classifier", default="RF", choices=["GNB", "DT", "KNN", "RF", "SVC", "DC"], help="The Classification Algorithm to use")
     parser.add_argument("-f", "--features", default="MFCC", choices=["MFCC", "DMFCC","PS", "ZCR", "BE"], help="The features to extract from the audio input files")
 
     args = parser.parse_args()

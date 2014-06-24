@@ -58,15 +58,18 @@ class Windowing:
         print "begin detection"
         Fs = float(44100)
         
-        peakWindowSize = int(0.030 * Fs)
-        peakStepSize = int(0.035 * Fs)
-        pwr_threshold = float(1200) ** 2
+        peakWindowSize = int(0.050 * Fs) # the common peak size is 30 ms
+        peakStepSize = int(0.060 * Fs)   # the iteration step is larger than the peak analysis window
+        """
+        The power threshold determines where a peak begins
+        """
+        pwr_threshold = 100000 # dB.s
 
-        keystrokeWindowSize = int(0.300 * Fs)
+        keystrokeWindowSize = int(0.300 * Fs) # = 13230 = 6615*2
         keystrokeMargin = int(0.035 * Fs)
 
-        maxWindows = int(math.floor((len(y_in) - keystrokeWindowSize)/keystrokeWindowSize))
-        out = np.ndarray((maxWindows,keystrokeWindowSize),dtype = y_in.dtype) # initialize values to zero please
+        maxWindows = int(math.floor((len(y_in) - keystrokeWindowSize)/keystrokeWindowSize)) # the maximum number of samples which can be extracted
+        out = np.ndarray((maxWindows,keystrokeWindowSize),dtype = y_in.dtype)
 
         offset = keystrokeMargin # initialize the time origin
         count = 0
@@ -74,7 +77,7 @@ class Windowing:
         while offset < end_offset:
             peak = y_in[offset : offset + peakWindowSize]
 	    # no pre-implemented function to calculate power?
-            peak_pwr=pwr(peak, peakWindowSize)
+            peak_pwr=pwr_log(peak, peakWindowSize)
             
             if peak_pwr > pwr_threshold:
                 # we suppose we are on the beginning of a keystroke
@@ -82,7 +85,7 @@ class Windowing:
                 sample_time = float(offset) / Fs
                 sample = y_in[offset : offset + keystrokeWindowSize]
                 sample_x = xrange(offset, offset + keystrokeWindowSize)
-                # plt.plot(sample_x, sample)
+                plt.plot(sample_x, sample)
                 out[count] = sample
                 count = count + 1
                 offset = offset + keystrokeWindowSize + keystrokeMargin + peakStepSize * 2
@@ -90,11 +93,15 @@ class Windowing:
                 offset = offset + peakStepSize
 
         print "%d keystrokes detected" % count
-        # plt.show()
+        plt.show()
 	# delete zero rows
         np.delete(out, xrange(count, maxWindows))
         print " end detection"
         return out
+
+def pwr_log(x, len):
+    y=20.0*np.log10(abs(x)+1)
+    return sum(y)
 
 def pwr(x, len):
     # x_sqr=pow(abs(x),2)
