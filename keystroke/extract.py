@@ -14,8 +14,8 @@ class FeatureExtractor:
     supportedFeatures = ["MFCC", "DMFCC", "ZCR", "BE", "PS"]
     
     def __init__(self, feature_type):
-        self.windowSize = 10584  # 1*4096
-        self.stepSize = 5292  # 1*2048
+        self.windowSize = 13230   # 1*4096
+        self.stepSize = 6615   # 1*2048
         self.windowFunc =  np.hamming(self.windowSize)
         self.threshold = ThresholdFilter()
         self.windowing = Windowing(self.windowSize,self.stepSize)

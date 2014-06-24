@@ -60,43 +60,49 @@ class Windowing:
         
         peakWindowSize = int(0.030 * Fs)
         peakStepSize = int(0.035 * Fs)
-        pwr_threshold = float(600 ** 2)
+        pwr_threshold = float(1200) ** 2
 
-        keystrokeWindowSize = int(0.240 * Fs)
+        keystrokeWindowSize = int(0.300 * Fs)
         keystrokeMargin = int(0.035 * Fs)
 
         maxWindows = int(math.floor((len(y_in) - keystrokeWindowSize)/keystrokeWindowSize))
         out = np.ndarray((maxWindows,keystrokeWindowSize),dtype = y_in.dtype) # initialize values to zero please
 
-        offset = 0 # initialize the time origin
+        offset = keystrokeMargin # initialize the time origin
         count = 0
         end_offset = len(y_in) - keystrokeWindowSize
         while offset < end_offset:
             peak = y_in[offset : offset + peakWindowSize]
-			# no pre-implemented function to calculate power?
-            peak_sqr = map(int_sqr_float,peak)
-            peak_pwr = np.sum(peak_sqr) / peakWindowSize
-            # print peak_pwr
+	    # no pre-implemented function to calculate power?
+            peak_pwr=pwr(peak, peakWindowSize)
             
             if peak_pwr > pwr_threshold:
                 # we suppose we are on the beginning of a keystroke
                 offset = offset - keystrokeMargin
                 sample_time = float(offset) / Fs
                 sample = y_in[offset : offset + keystrokeWindowSize]
-                #sample_x = xrange(offset, offset + keystrokeWindowSize)
-                #plt.plot(sample_x, sample)
+                sample_x = xrange(offset, offset + keystrokeWindowSize)
+                # plt.plot(sample_x, sample)
                 out[count] = sample
                 count = count + 1
-                offset = offset + keystrokeWindowSize + keystrokeMargin
+                offset = offset + keystrokeWindowSize + keystrokeMargin + peakStepSize * 2
             else:
                 offset = offset + peakStepSize
 
         print "%d keystrokes detected" % count
-        #plt.show()
-		# delete zero rows
+        # plt.show()
+	# delete zero rows
         np.delete(out, xrange(count, maxWindows))
         print " end detection"
         return out
-    
-def int_sqr_float(x):
-    return float(x)*float(x)
+
+def pwr(x, len):
+    # x_sqr=pow(abs(x),2)
+    # return np.mean(x_sqr)
+    pw=0.0
+    for i in xrange(len):
+        pw=pw + float(x[i])**2
+    return pw / len
+
+def pwr_abs(x, len):
+    return np.sum(np.abs(x)) / len
