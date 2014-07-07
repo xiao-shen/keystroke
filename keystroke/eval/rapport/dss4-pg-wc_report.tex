@@ -39,16 +39,86 @@ In our work, we will choose strong experimental conditions in order to implement
 
 \subsection{Research task}
 
+The first step was to find out what other people had made on the subject. The most significant work we found on audio keystroke recognition was a report from the University of California, Berkeley \cite{Zhuang}. 
+
+The main points were:
+\begin{itemize}
+\item ---
+\end{itemize}
+
+The algorithmic ideas which were interesting were:
+\begin{itemize}
+\item Audio analysis similar to speech recognition algorithms. % sur?
+\item Determining the length of a keystroke. 
+\item Correcting errors in recognition with an English dictionary. 
+\item Using unsupervised learning in order to create the keystroke classes. The classes were then labeled with the key names, thanks to the statistical distribution of letters in the English language. Techniques used by cryptographers were used to correctly label the classes. 
+\end{itemize}
+
 \subsection{Our development axis}
+
+We had a fully working program, with an accuracy of $34 \%$. Our goal was to improve the accuracy of the program. 
+
+We first had to understand the code and compare the different classifiers and parameters. 
+
+We planned to change the way keystrokes were windowed out of the audio stream. Our goal was to obtain the whole keystroke in a frame instead of cutting it into multiple frames. The filter used to determine a keystroke was also changed. 
+
+We also planned to use two microphones in order to benefit from a new information about the position of the keystroke origin, thanks to the phase shift. 
+
+Moreover, we were looking forward to test other machine learning algorithms in Scikit such as Neural Networks. 
+
 
 \section{How we managed to improve the results}
 
-\subsection{Recording conditions}
+\subsection{The windowing algorithm}
 
+We determined the length of a keystroke and set it to $300 \mathrm{ms}$. This was similar to the result of the Berkeley's report \cite{Zhuang} ($ \mathrm{ms}$). 
+
+We then had to cut the windows out. The program is based on the first peak recognition. It scans the stream in order to find such a peak. 
+The length of the first peak was set to $50 \mathrm{ms}$. We considered as a peak a feature with an amplitude larger than a threshold, using a particular norm (the sum of the logarithm). 
+The window was then shot, with a back-step of $35 \mathrm{ms}$. 
+The keystroke is followed by resulting noise which can be not considered. But this noise could be detected as a peak. So we added a step of $120 \mathrm{ms}$. 
+
+As we increased by 4 times the length of a window, we increased the number of features from $7$ to $25$. We also had to disable the filtering algorithm because it is included in the windowing algorithm. 
+The results of this algorithm were satisfying. With the given samples and with the KNN classifier, we obtained a $90 \%$ accuracy. 
+
+
+\subsection{The dual microphone recordings}
+
+\subsubsection{The machine}
+
+We borrowed a stereo microphone from the Filmkreis. 
+The principle of this recording system is know as AB stereo microphones. They are two directional microphones placed nearly at the same point. As the microphones are directional, the difference comes from the amplitude of the signal and not from the phase. 
+
+The problem with this microphone is that it could not provide any significant phase shift because the two microphones were almost at the same place. 
+We hoped we could use the power ratio between the two channels but it was not significant enough. 
+
+\subsubsection{The sample recording}
+
+We recorded our own samples. We followed a pre-defined order in order to check all types of keystrokes could be recognized. The order was Loud, Normal, Quiet, Fast. We separated the fast keystrokes from the others because our algorithm asked for further development to be detected properly (the keystroke rate was higher than the one accepted). 
+
+\subsubsection{The power ratio analysis}
+% ...
+
+\subsubsection{The results with our algorithm}
+% The results were poorer than with the original samples. This was maybe due to the echo in the room we used for the recordings. 
+
+\subsection{Working conditions}
 % établir la liste des conditions pour que notre programme fonctionne 
 % par exemple: ambiance silencieuse, un seul clavier, position des micros, etc
 
-\subsection{Stereo-recording solution}
+As our algorithm was experimental, we used strict conditions for our recordings. 
+
+The length used by a recognized keystroke is $420 \mathrm{ms}$. The maximum keystroke rate is then $142 \mathtt{cpm}$ (characters per minute). 
+
+The recording of the keystrokes must take place in a silent environment, in a room with few echo. One keyboard must be recorded at a time. And the user must be the same. 
+
+The recording must first be a learning sequence of the keystrokes. Than only, the keystrokes can be recognized. Our program doesn't implement recognition on the fly. 
+
+
+
+\section*{Conclusion}
+
+% \subsection*{Further development}
 
 
 \bibliographystyle{plain}
