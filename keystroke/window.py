@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from pwr import *
 
 class Windowing:
     """
@@ -53,13 +54,14 @@ class Windowing:
 
     def applybis(self,y_in):
         """
+		Peak detection algorithm
         This windowing function seeks first for the beginning of a keystroke and then returns a list of fixed-sized windows in a matrix
         """
         print "begin detection"
-        Fs = float(44100)
+        Fs = float(48000)
         
         peakWindowSize = int(0.050 * Fs) # the common peak size is 30 ms
-        peakStepSize = int(0.060 * Fs)   # the iteration step is larger than the peak analysis window
+        peakStepSize = int(0.040 * Fs)   # the iteration step is larger than the peak analysis window
         """
         The power threshold determines where a peak begins
         """
@@ -88,9 +90,9 @@ class Windowing:
                 plt.plot(sample_x, sample)
                 out[count] = sample
                 count = count + 1
-                offset = offset + keystrokeWindowSize + keystrokeMargin + peakStepSize * 2
+                offset = offset + keystrokeWindowSize + keystrokeMargin + peakStepSize
             else:
-                offset = offset + peakStepSize
+                offset = offset + peakWindowSize + peakStepSize
 
         print "%d keystrokes detected" % count
         plt.show()
@@ -98,18 +100,3 @@ class Windowing:
         np.delete(out, xrange(count, maxWindows))
         print " end detection"
         return out
-
-def pwr_log(x, len):
-    y=20.0*np.log10(abs(x)+1)
-    return sum(y)
-
-def pwr(x, len):
-    # x_sqr=pow(abs(x),2)
-    # return np.mean(x_sqr)
-    pw=0.0
-    for i in xrange(len):
-        pw=pw + float(x[i])**2
-    return pw / len
-
-def pwr_abs(x, len):
-    return np.sum(np.abs(x)) / len
